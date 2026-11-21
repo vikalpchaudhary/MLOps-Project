@@ -1,0 +1,14 @@
+.venv/
+venv/
+
+.DS_Store
+Thumbs.db
+
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+mlruns/
+mlartifacts/
