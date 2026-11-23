@@ -1,0 +1,13 @@
+train_path: data/raw/train.csv
+model_path: models/model.joblib
+validation_start: "2026-05-30"
+experiment_name: MP187 City Bus Delay
+registered_model_name: mp187-city-bus-delay
+ridge_experiment_alpha: 1.0
+candidates:
+  ridge:
+    alpha: 0.1
+  huber:
+    epsilon: 1.35
+  gradient_boosting:
+    random_state: 46

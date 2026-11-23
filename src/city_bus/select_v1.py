@@ -16,27 +16,35 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from .data import TRAIN_PATH, clean_data
+from .config import load_params
+from .data import clean_data
 
 
 def main():
+    params = load_params()
     mlflow.set_tracking_uri("sqlite:///mlflow.db")
-    mlflow.set_experiment("MP187 City Bus Delay")
+    mlflow.set_experiment(params["experiment_name"])
     client = MlflowClient()
-    name = "mp187-city-bus-delay"
+    name = params["registered_model_name"]
     if client.search_model_versions(f"name='{name}'"):
         raise SystemExit("Version 1 already exists. Use the retraining workflow for later versions.")
 
-    data = clean_data(pd.read_csv(TRAIN_PATH))
+    train_path = Path(params["train_path"])
+    data = clean_data(pd.read_csv(train_path))
     numeric = ["route_km", "stops", "passengers", "hour", "temp_c", "driver_exp_yr"]
     categorical = ["weather", "depot_zone"]
     x = data[numeric + categorical]
     y = data["delay_min"]
-    cutoff = "2026-05-30"
+    cutoff = params["validation_start"]
     train = data["date"] < cutoff
-    digest = hashlib.sha256(TRAIN_PATH.read_bytes()).hexdigest()
+    digest = hashlib.sha256(train_path.read_bytes()).hexdigest()
     results = []
-    for estimator in [Ridge(alpha=0.1), HuberRegressor(), GradientBoostingRegressor(random_state=46)]:
+    candidates = params["candidates"]
+    for estimator in (
+        Ridge(**candidates["ridge"]),
+        HuberRegressor(**candidates["huber"]),
+        GradientBoostingRegressor(**candidates["gradient_boosting"]),
+    ):
         transform = ColumnTransformer([
             ("numeric", StandardScaler(), numeric),
             ("categories", OneHotEncoder(handle_unknown="ignore", sparse_output=False), categorical),
@@ -60,7 +68,7 @@ def main():
     version = mlflow.register_model(info.model_uri, name)
     restored = mlflow.sklearn.load_model(f"models:/{name}/{version.version}")
     np.testing.assert_allclose(restored.predict(sample), model.predict(sample))
-    path = Path("models/model.joblib")
+    path = Path(params["model_path"])
     path.parent.mkdir(exist_ok=True)
     joblib.dump(model, path)
     np.testing.assert_allclose(joblib.load(path).predict(sample), restored.predict(sample))
