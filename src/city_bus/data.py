@@ -100,12 +100,10 @@ def clean_data(df: pd.DataFrame, is_train: bool = True) -> pd.DataFrame:
     3. Corrects driver_exp_yr for North depot (recorded in months instead of years).
     4. Corrects 10x typos in target delay_min (if present).
     """
-    df_clean = df.copy()
+    if not is_train:
+        return df.drop(columns=["delay_logged_by_conductor"], errors="ignore").copy()
 
-    # 1. Deduplicate
-    initial_len = len(df_clean)
-    df_clean = df_clean.drop_duplicates()
-    dropped_dupes = initial_len - len(df_clean)
+    df_clean = df.drop_duplicates().copy()
 
     # 2. Drop leaking column
     if "delay_logged_by_conductor" in df_clean.columns:

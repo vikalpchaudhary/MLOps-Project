@@ -6,6 +6,7 @@ joblib==1.4.2
 
 # Experiment Tracking & Config
 mlflow==2.17.2
+SQLAlchemy==2.0.36
 pyyaml==6.0.2
 
 # API & Serving
