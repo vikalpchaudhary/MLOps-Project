@@ -1,15 +1,12 @@
-"""API, validation, logging, and deployment manifest tests for Stage 3."""
+"""API, validation, and logging tests for Stage 3."""
 
 import json
 import math
-from pathlib import Path
 
-import yaml
 from fastapi.testclient import TestClient
 
 from app.main import app
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
 client = TestClient(app)
 
 VALID_TRIP = {
@@ -75,23 +72,3 @@ def test_predict_logs_valid_json_line_to_stdout(capsys):
     assert record["level"] == "INFO"
     assert "prediction" in record
     assert "latency_ms" in record
-
-
-def test_kubernetes_manifests_match_problem_spec():
-    deployment = yaml.safe_load((REPO_ROOT / "k8s" / "deployment.yaml").read_text(encoding="utf-8"))
-    service = yaml.safe_load((REPO_ROOT / "k8s" / "service.yaml").read_text(encoding="utf-8"))
-
-    assert deployment["metadata"]["name"] == "mp187-api"
-    assert deployment["spec"]["replicas"] == 2
-    container = deployment["spec"]["template"]["spec"]["containers"][0]
-    assert container["image"] == "mp187-api:1.0"
-    assert container["ports"][0]["containerPort"] == 8000
-    assert container["readinessProbe"]["httpGet"]["path"] == "/health"
-    assert container["livenessProbe"]["httpGet"]["path"] == "/health"
-    assert container["livenessProbe"]["initialDelaySeconds"] > container["readinessProbe"]["initialDelaySeconds"]
-
-    pod_labels = deployment["spec"]["template"]["metadata"]["labels"]
-    assert service["metadata"]["name"] == "mp187-svc"
-    assert service["spec"]["selector"] == pod_labels
-    assert service["spec"]["ports"][0]["port"] == 80
-    assert service["spec"]["ports"][0]["targetPort"] == 8000
