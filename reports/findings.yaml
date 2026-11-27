@@ -44,19 +44,19 @@ tracking:
   champion_version: 1
 
 monitoring:
-  psi:                     # cleaned train.csv vs later.csv, 10 bins
-    route_km: null
-    stops: null
-    passengers: null
-    hour: null
-    temp_c: null
-    driver_exp_yr: null
-  most_drifted_feature: null
-  mae_by_group:            # v1 on later.csv, per value of depot_zone
-    'North': null
-    'South': null
-    'East': null
-  worst_served_group: null
-  mae_v1_on_check: null    # v1 on the last 30% of later.csv (by date)
-  mae_v2_on_check: null    # v2 on the same rows
-  decision: null           # promote or keep
+  psi:
+    route_km: 0.02699953258229176
+    stops: 0.023184285145531853
+    passengers: 0.08275581165642662
+    hour: 0.07709291690954488
+    temp_c: 7.427449539394356
+    driver_exp_yr: 0.03163960060461738
+  most_drifted_feature: temp_c
+  mae_by_group:
+    'North': 1.5504019146977248
+    'South': 9.726168421332831
+    'East': 2.1866513382147854
+  worst_served_group: South
+  mae_v1_on_check: null
+  mae_v2_on_check: null
+  decision: null
